@@ -1,0 +1,119 @@
+# ============================================================
+# CI: que los tests existan para alguien más que para mi máquina.
+#
+# Dos trabajos, y están separados a propósito:
+#
+#   `puras`  corre SIN base de datos y con NODE_ENV=production. Es rápido
+#            y prueba algo que el otro no: que el código que no necesita
+#            base tampoco la exija por accidente. En el proyecto hermano
+#            eso se descubrió tarde, cuando tests que pasaban en
+#            desarrollo reventaban en el servidor.
+#
+#   `todo`   levanta PostgreSQL y corre la suite completa más el build
+#            del frontend.
+#
+# Si `puras` cae y `todo` pasa, el problema es una dependencia de entorno
+# que se coló. Con un solo trabajo esa distinción se pierde.
+# ============================================================
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Un push nuevo cancela la corrida anterior de la misma rama: no tiene
+# sentido gastar minutos en verificar un commit que ya quedó atrás.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  puras:
+    name: Tests sin base (NODE_ENV=production)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - run: npm ci
+        working-directory: backend
+
+      # Sin DATABASE_URL a propósito: estos tests leen código fuente y
+      # calculan, no consultan. Si alguno empieza a necesitar base, este
+      # trabajo lo delata acá y no en el servidor.
+      - name: Puras y migrador
+        working-directory: backend
+        env:
+          NODE_ENV: production
+          JWT_SECRET: solo-para-ci-no-es-un-secreto-real
+          DATABASE_URL: postgresql://nadie@localhost:1/no-se-usa
+        run: node --test 'test/agenda.test.js' 'test/cotizacion.test.js' 'test/migrate.test.js'
+
+  todo:
+    name: Suite completa y build
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # Misma versión mayor con la que se desarrolla. Fijarla evita que
+        # el CI cambie de motor por debajo sin que nadie lo decida.
+        image: postgres:16
+        env:
+          POSTGRES_USER: antai
+          POSTGRES_PASSWORD: antai
+          POSTGRES_DB: antai
+        ports: ['5432:5432']
+        # Sin este health check los tests arrancan antes que Postgres y
+        # el fallo se ve como un error de conexión al azar.
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://antai:antai@localhost:5432/antai
+      JWT_SECRET: solo-para-ci-no-es-un-secreto-real
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - run: npm ci
+        working-directory: backend
+
+      # Se aplican DOS VECES: la segunda tiene que reportarlas omitidas.
+      # Es la comprobación de que el registro del migrador funciona, y es
+      # barata comparada con descubrir en producción que no.
+      - name: Migraciones (dos veces)
+        working-directory: backend
+        run: |
+          npm run migrate
+          npm run migrate 2>&1 | tee segunda.log
+          grep -q "ya estaban aplicadas" segunda.log \
+            || { echo "::error::La segunda corrida no reportó migraciones omitidas: el registro no está funcionando."; exit 1; }
+
+      - name: Suite completa
+        working-directory: backend
+        run: npm test
+
+      - run: npm ci
+        working-directory: frontend
+
+      - name: Build del frontend
+        working-directory: frontend
+        run: npm run build
