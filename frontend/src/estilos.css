@@ -1,0 +1,215 @@
+/* ============================================================
+   Paleta Antai — cálida, de altiplano.
+
+   CONTRASTE MEDIDO, NO ESTIMADO. Cada par texto/fondo se comprobó contra
+   WCAG AA (4.5:1 para texto normal, 3:1 para texto grande):
+
+     tierra  #4a2c1d sobre arena  #f6efe6 → 11.03:1  AAA
+     piedra  #6b5b4e sobre arena  #f6efe6 →  5.70:1  AA
+     cobre   #a54a19 sobre arena  #f6efe6 →  5.12:1  AA
+     blanco  #ffffff sobre cobre  #a54a19 →  5.84:1  AA
+     blanco  #ffffff sobre tierra #4a2c1d → 12.58:1  AAA
+
+   EL COBRE DE LA REFERENCIA ERA #b4531f Y NO PASABA: 4.39:1, justo bajo
+   el 4.5 exigido. Se oscureció a #a54a19 para texto y el vivo quedó
+   reservado a titulares grandes, donde el mínimo es 3:1 y sobra.
+
+     cobre-vivo #b4531f sobre arena → 4.39:1  AA solo en texto grande
+     adobe      #c98a5b sobre arena → 2.53:1  NUNCA para texto: es borde.
+   ============================================================ */
+
+:root {
+  --tierra: #4a2c1d;
+  --cobre: #a54a19;
+  --cobre-vivo: #b4531f;
+  --arena: #f6efe6;
+  --arena-clara: #fdfaf6;
+  --adobe: #c98a5b;
+  --piedra: #6b5b4e;
+  --borde: #e3d5c5;
+  --blanco: #ffffff;
+
+  --radio: 10px;
+  --sombra: 0 1px 2px rgba(74, 44, 29, .06), 0 8px 24px rgba(74, 44, 29, .07);
+  --fuente: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --titulo: 'Archivo Black', 'Arial Black', Impact, var(--fuente);
+  --ancho: 1120px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--fuente);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--tierra);
+  background: var(--arena);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* El foco visible NO se quita. Quien navega con teclado necesita saber
+   dónde está parado, y un `outline: none` sin reemplazo deja la página
+   inservible para esa persona. */
+:focus-visible {
+  outline: 3px solid var(--cobre);
+  outline-offset: 2px;
+}
+
+a { color: var(--cobre); }
+
+h1, h2, h3 { font-family: var(--titulo); font-weight: 400; line-height: 1.15; letter-spacing: -.01em; }
+
+.contenedor { width: 100%; max-width: var(--ancho); margin: 0 auto; padding: 0 20px; }
+
+/* ---------- Barra ---------- */
+.barra {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(246, 239, 230, .92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--borde);
+}
+.barra-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 20px; }
+.barra-links { display: flex; align-items: center; gap: 22px; }
+.barra-links a { color: var(--tierra); text-decoration: none; font-weight: 500; font-size: 15px; }
+.barra-links a:hover { color: var(--cobre); }
+
+/* ---------- Hero ----------
+   El degradado es el fondo REAL, no un marcador de posición esperando
+   una foto. Si mañana llega una fotografía con licencia, entra por
+   --hero-img y se compone encima; sin ella la página está terminada
+   igual, que es la única forma de no depender de un archivo que no
+   existe. */
+.hero {
+  background:
+    var(--hero-img, none) center/cover no-repeat,
+    radial-gradient(1000px 460px at 12% -10%, rgba(201, 138, 91, .34), transparent 62%),
+    linear-gradient(158deg, #5c3823 0%, #4a2c1d 46%, #35200f 100%);
+  color: var(--blanco);
+  padding: 88px 0 96px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 56px; align-items: center; }
+.hero h1 {
+  font-size: clamp(30px, 4.6vw, 52px);
+  margin: 0 0 18px;
+  color: var(--blanco);
+  text-transform: uppercase;
+}
+.hero p.bajada { font-size: clamp(16px, 1.9vw, 19px); color: #f0e2d5; max-width: 46ch; margin: 0 0 30px; }
+.hero-acciones { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* ---------- Botones ---------- */
+.boton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 22px; border-radius: var(--radio); border: 2px solid transparent;
+  font: inherit; font-weight: 600; font-size: 15px; cursor: pointer;
+  text-decoration: none; transition: transform .15s ease, background .15s ease;
+}
+.boton:active { transform: translateY(1px); }
+.boton-primario { background: var(--cobre); color: var(--blanco); }
+.boton-primario:hover { background: var(--cobre-vivo); }
+.boton-borde { background: transparent; color: var(--blanco); border-color: rgba(255, 255, 255, .55); }
+.boton-borde:hover { border-color: var(--blanco); }
+.boton-tierra { background: var(--tierra); color: var(--blanco); }
+.boton:disabled { opacity: .55; cursor: not-allowed; }
+.boton-chico { padding: 7px 13px; font-size: 13px; }
+
+/* ---------- Secciones ---------- */
+.seccion { padding: 76px 0; }
+.seccion-clara { background: var(--arena-clara); }
+.seccion h2 { font-size: clamp(23px, 3vw, 33px); margin: 0 0 12px; }
+.seccion .entrada { color: var(--piedra); max-width: 62ch; margin: 0 0 38px; font-size: 17px; }
+
+.rejilla { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 268px), 1fr)); }
+
+.tarjeta {
+  background: var(--blanco); border: 1px solid var(--borde);
+  border-radius: var(--radio); padding: 26px; box-shadow: var(--sombra);
+  min-width: 0;
+}
+.tarjeta h3 { font-size: 18px; margin: 0 0 10px; }
+.tarjeta p { color: var(--piedra); margin: 0; font-size: 15px; }
+
+.numerito {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--tierra); color: var(--blanco);
+  font-family: var(--titulo); font-size: 15px; margin-bottom: 14px;
+}
+
+/* ---------- Tablas: siempre con su propio scroll ---------- */
+.tabla-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--borde); }
+th { font-weight: 600; color: var(--piedra); font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; }
+
+/* ---------- Agenda ---------- */
+.fecha {
+  display: grid; grid-template-columns: 92px minmax(0, 1fr) auto;
+  gap: 20px; align-items: center;
+  background: var(--blanco); border: 1px solid var(--borde);
+  border-radius: var(--radio); padding: 18px 22px; margin-bottom: 14px;
+}
+.fecha-dia { text-align: center; border-right: 1px solid var(--borde); padding-right: 16px; }
+.fecha-dia .d { font-family: var(--titulo); font-size: 30px; line-height: 1; }
+.fecha-dia .m { font-size: 12px; text-transform: uppercase; letter-spacing: .09em; color: var(--piedra); }
+.fecha h3 { margin: 0 0 5px; font-size: 17px; }
+.fecha .donde { color: var(--piedra); font-size: 14px; margin: 0; }
+
+.pastilla {
+  display: inline-block; padding: 4px 11px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; white-space: nowrap;
+}
+.pastilla-abierta { background: #e8f0e4; color: #34521f; }
+.pastilla-quedan { background: #fdf0e2; color: #7d3a10; }
+.pastilla-llena { background: #f2e6e2; color: #7a2f22; }
+.pastilla-gris { background: #efe7dd; color: var(--piedra); }
+
+/* ---------- Formularios ---------- */
+.campo { display: block; margin-bottom: 15px; }
+.campo span { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
+input, select, textarea {
+  width: 100%; padding: 10px 12px; font: inherit; font-size: 15px;
+  border: 1px solid var(--borde); border-radius: 8px;
+  background: var(--blanco); color: var(--tierra);
+}
+textarea { min-height: 84px; resize: vertical; }
+.fila { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 0 16px; }
+
+.aviso { padding: 12px 15px; border-radius: 8px; font-size: 14.5px; margin-bottom: 16px; }
+.aviso-bien { background: #e8f0e4; color: #2f4a1c; }
+.aviso-mal { background: #f7e7e3; color: #7a2f22; }
+.aviso-gris { background: #efe7dd; color: var(--piedra); }
+
+.tenue { color: var(--piedra); font-size: 14px; }
+
+/* ---------- Pie ---------- */
+.pie { background: var(--tierra); color: #e6d6c8; padding: 46px 0 34px; margin-top: 8px; }
+.pie a { color: #f0dcc9; }
+.pie-inner { display: flex; flex-wrap: wrap; gap: 30px; justify-content: space-between; align-items: flex-start; }
+.pie small { display: block; color: #bda694; font-size: 12.5px; line-height: 1.7; }
+
+/* ---------- Panel ---------- */
+.panel { min-height: 100vh; background: var(--arena); }
+.panel-barra { background: var(--tierra); color: var(--blanco); padding: 12px 0; }
+.panel-barra .contenedor { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+
+/* ---------- Angosto ---------- */
+@media (max-width: 860px) {
+  .hero { padding: 56px 0 62px; }
+  .hero-inner { grid-template-columns: minmax(0, 1fr); gap: 34px; }
+  .seccion { padding: 52px 0; }
+  .barra-links { gap: 14px; font-size: 14px; }
+  .fecha { grid-template-columns: 66px minmax(0, 1fr); }
+  .fecha > .pastilla { grid-column: 1 / -1; justify-self: start; }
+  .pie-inner { flex-direction: column; gap: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; }
+}
