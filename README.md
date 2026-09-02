@@ -1,5 +1,7 @@
 # Antai Mineral Mark
 
+[![CI](https://github.com/Houmeecl/antai/actions/workflows/ci.yml/badge.svg)](https://github.com/Houmeecl/antai/actions/workflows/ci.yml)
+
 Capacitación CBAM y preparación de evidencia industrial trazable para
 proveedores mineros. Antofagasta, Chile.
 
@@ -119,3 +121,20 @@ cd frontend && npm run build
 
 Los tests de rutas necesitan la base; los puros y los del migrador corren
 en cualquier parte, también con `NODE_ENV=production`.
+
+### En cada pull request
+
+`.github/workflows/ci.yml` corre dos trabajos, y están **separados a
+propósito**:
+
+- **`puras`** — sin base de datos y con `NODE_ENV=production`. Prueba algo
+  que el otro no: que el código que no necesita base tampoco la exija por
+  accidente. Si este cae y el otro pasa, se coló una dependencia de
+  entorno.
+- **`todo`** — levanta PostgreSQL 16, aplica las migraciones **dos veces**
+  —la segunda tiene que reportarlas omitidas, o el trabajo falla— corre la
+  suite completa y compila el frontend.
+
+Esa doble corrida de migraciones no es ceremonia: es la comprobación de
+que el registro del migrador funciona. Se probó rompiéndolo a mano (con la
+tabla de registro borrada, el paso falla).
