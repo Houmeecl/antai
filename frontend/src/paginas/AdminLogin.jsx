@@ -17,7 +17,7 @@ export default function AdminLogin() {
     try {
       const r = await api('/admin/login', { metodo: 'POST', cuerpo: { email, clave } });
       guardarToken(r.token);
-      navegar('/panel/agenda');
+      navegar('/panel/tablero');
     } catch (err) {
       setError(err.message);
     } finally {

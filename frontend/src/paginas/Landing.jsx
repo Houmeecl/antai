@@ -13,21 +13,55 @@ import Agenda from '../componentes/Agenda.jsx';
 // primer cliente lo va a exigir mañana.
 // ============================================================
 
-const QUE_HACEMOS = [
+// Las cinco áreas. Cada una dice hasta dónde llega HOY, en su propia
+// línea: es más honesto y además más útil que un párrafo general al pie
+// que nadie relaciona con el servicio que le interesa.
+//
+// `hoy` es lo que ya se hace. `condicion` aparece solo donde falta algo
+// —acreditación— y se muestra distinto, no escondido.
+const AREAS = [
   {
-    titulo: 'Capacitación CBAM',
-    texto: 'Formación para equipos de proveedores industriales: qué exige el mecanismo europeo, '
-      + 'qué datos hay que tener y en qué forma. Con constancia de participación.',
+    clave: 'cbam',
+    titulo: 'CBAM',
+    linea: 'Mecanismo de Ajuste en Frontera por Carbono',
+    hoy: 'Preparamos los datos que la Unión Europea pide por instalación, producto y período, '
+      + 'con la evidencia detrás de cada cifra.',
   },
   {
-    titulo: 'Evidencia industrial trazable',
-    texto: 'Convertimos una operación en un expediente donde cada dato tiene fuente, período, '
-      + 'instalación y responsable. No es un archivador de PDF: es evidencia que otro puede usar.',
+    clave: 'capacitacion',
+    titulo: 'Capacitación',
+    linea: 'Formación para equipos técnicos y comerciales',
+    hoy: 'Qué exige CBAM, qué datos hay que tener y en qué forma entregarlos. '
+      + 'Presencial en Antofagasta y la región, con constancia de participación.',
   },
   {
-    titulo: 'Origen a destino',
-    texto: 'El expediente de una carga desde la faena hasta el puerto de llegada, con los '
-      + 'documentos que cada frontera pide y los que faltan a la vista.',
+    clave: 'verificacion',
+    titulo: 'Verificación',
+    linea: 'Revisión independiente de la información declarada',
+    hoy: 'Hoy revisamos la consistencia de la evidencia y dejamos por escrito qué respalda '
+      + 'cada dato y qué falta.',
+    condicion: 'La verificación acreditada exige ISO 17029 / 14065. Está en camino, todavía no está.',
+  },
+  {
+    clave: 'certificacion',
+    titulo: 'Certificación',
+    linea: 'Acreditación de conformidad frente a un esquema',
+    hoy: 'Preparamos a la empresa y su expediente para presentarse ante un organismo certificador.',
+    condicion: 'Antai no emite certificados propios. Acompañamos el proceso ante quien sí puede.',
+  },
+  {
+    clave: 'corredor',
+    titulo: 'Corredor',
+    linea: 'Origen a destino, por el corredor bioceánico',
+    hoy: 'El expediente de una carga desde la faena hasta el puerto de llegada, con los documentos '
+      + 'que cada frontera pide y los que faltan a la vista.',
+  },
+  {
+    clave: 'mineria',
+    titulo: 'Minería',
+    linea: 'Proveedores industriales de la gran minería',
+    hoy: 'Maestranzas y metalmecánicas que venden a faena: convertimos su operación en un '
+      + 'expediente que el comprador, el auditor y el banco pueden usar.',
   },
 ];
 
@@ -48,7 +82,7 @@ export default function Landing() {
         <div className="barra-inner">
           <LogoAntai variante="horizontal" alto={34} />
           <nav className="barra-links">
-            <a href="#que-hacemos">Qué hacemos</a>
+            <a href="#que-hacemos">Áreas</a>
             <a href="#como">Cómo funciona</a>
             <a href="#agenda">Agenda</a>
             <a href="#contacto">Contacto</a>
@@ -56,51 +90,51 @@ export default function Landing() {
         </div>
       </header>
 
-      <section className="hero">
-        <div className="contenedor hero-inner">
-          <div>
-            <LogoAntai variante="completo" tono="claro" alto={190} />
+      <section className="hero hero-centro">
+        <div className="contenedor">
+          <div className="hero-marca">
+            <LogoAntai variante="completo" tono="claro" alto={220} />
           </div>
-          <div>
-            <h1>El futuro del mundo comienza aquí</h1>
-            <p className="bajada">
-              Capacitamos en CBAM y preparamos la evidencia industrial que tu comprador,
-              tu auditor y tu banco van a pedirte. En Antofagasta, con proveedores mineros
-              que ya están exportando.
-            </p>
-            <div className="hero-acciones">
-              <a className="boton boton-primario" href="#agenda">Ver próximas fechas</a>
-              <a className="boton boton-borde" href="#que-hacemos">Qué hacemos</a>
-            </div>
+          <h1>El futuro del mundo comienza aquí</h1>
+          <p className="bajada">
+            Capacitación CBAM y evidencia industrial trazable para proveedores mineros.
+            Antofagasta, Chile.
+          </p>
+          <div className="hero-acciones">
+            <a className="boton boton-primario" href="#agenda">Ver próximas fechas</a>
+            <a className="boton boton-borde" href="#areas">Nuestras áreas</a>
+          </div>
+
+          <div className="areas" id="areas">
+            {AREAS.map((a) => (
+              <a className="area" href="#que-hacemos" key={a.clave}>
+                <span className="area-titulo">{a.titulo}</span>
+                <span className="area-linea">{a.linea}</span>
+              </a>
+            ))}
           </div>
         </div>
       </section>
 
       <section className="seccion" id="que-hacemos">
         <div className="contenedor">
-          <h2>Qué hacemos</h2>
+          <h2>Nuestras áreas</h2>
           <p className="entrada">
             No vendemos software ambiental. Vendemos que una operación industrial quede
             documentada de forma que un tercero pueda usarla sin volver a preguntar nada.
+            De cada área decimos hasta dónde llega hoy.
           </p>
           <div className="rejilla">
-            {QUE_HACEMOS.map((c) => (
-              <article className="tarjeta" key={c.titulo}>
-                <h3>{c.titulo}</h3>
-                <p>{c.texto}</p>
+            {AREAS.map((a) => (
+              <article className="tarjeta area-detalle" key={a.clave}>
+                <h3>{a.titulo}</h3>
+                <p className="area-linea-detalle">{a.linea}</p>
+                <p>{a.hoy}</p>
+                {a.condicion && (
+                  <p className="area-condicion">{a.condicion}</p>
+                )}
               </article>
             ))}
-          </div>
-
-          <div className="tarjeta" style={{ marginTop: 26, borderLeft: '4px solid var(--cobre)' }}>
-            <h3>Lo que todavía no hacemos, y lo decimos</h3>
-            <p>
-              Antai <strong>no verifica ni certifica</strong> declaraciones CBAM. Verificar exige
-              acreditación bajo ISO 17029 / 14065 y una separación de roles que estamos
-              construyendo, no dando por hecha. Hoy preparamos la evidencia para que un
-              verificador acreditado la use — y decimos con claridad hasta dónde llega
-              cada dato.
-            </p>
           </div>
         </div>
       </section>

@@ -3,9 +3,16 @@
 Capacitación CBAM y preparación de evidencia industrial trazable para
 proveedores mineros. Antofagasta, Chile.
 
-Este repositorio tiene la portada pública, la marca y la **agenda**: el
-equipo carga las fechas de formación, la gente toma su cupo y recibe la
-confirmación por correo.
+Este repositorio tiene la portada pública, la marca y el sistema
+comercial completo:
+
+**CRM → cotización → correo → pago.** Un contacto entra (por la agenda o a
+mano), se le cotiza, la cotización sale por correo con su enlace, el
+cliente la acepta y avisa cuando transfiere, y Antai confirma el pago
+contra la cuenta. Cada paso queda en la bitácora del contacto.
+
+La **agenda** de formación alimenta el CRM: quien se inscribe a una
+actividad entra como contacto en el mismo movimiento.
 
 ---
 
@@ -59,7 +66,7 @@ frontend/
   src/paginas/Landing.jsx         la portada
 ```
 
-### Tres decisiones que conviene conocer antes de tocar nada
+### Seis decisiones que conviene conocer antes de tocar nada
 
 **1. `cupo` NULL significa SIN LÍMITE. No cero.**
 Un evento sin tope tiene `cupo = NULL`, y `cuposDisponibles()` devuelve
@@ -77,7 +84,26 @@ que el candado bloquea de verdad, otro que la ruta no lo pierda.
 `fetch` simultáneos, y pasaba igual con y sin el `FOR UPDATE`. Un test que
 pasa con el bug adentro es peor que no tenerlo.
 
-**3. El migrador lleva registro desde el commit inicial.**
+**3. La plata va en pesos enteros, y el IVA se redondea una sola vez.**
+`BIGINT` en la base, `Math.round` en un único lugar de
+`services/cotizacion.js`. Tres líneas de 33.333 tienen que dar el mismo
+IVA que una de 99.999, y hay un test que lo exige. Los totales se
+**guardan**, no se recalculan al leer: una cotización enviada es una
+oferta y tiene que seguir diciendo lo mismo si mañana cambia un precio.
+
+**4. Solo los pagos CONFIRMADOS bajan el saldo.**
+Un pago «pendiente» es alguien diciendo que pagó. El tablero muestra
+cobrado y por-confirmar en columnas separadas: sumarlos sería anotar como
+ingreso un depósito que nadie vio en la cuenta.
+
+**5. El vencimiento se mide en hora de Chile, no del servidor.**
+Un VPS corre en UTC. La primera versión usaba la zona local del proceso, y
+una cotización válida «hasta el 30» vencía a las 21:00 hora chilena —tres
+horas todos los días en que el cliente veía «vencida» un documento
+vigente—. `finDelDiaEnChile()` ancla el cálculo a `America/Santiago`,
+incluido el cambio de hora.
+
+**6. El migrador lleva registro desde el commit inicial.**
 Cada `.sql` se aplica una vez, en su transacción, con su fila y su sha256.
 Si alguien edita una migración ya aplicada, el arranque **avisa** — y no la
 re-ejecuta. Una migración aplicada no se reescribe: se hace una nueva.
@@ -87,7 +113,7 @@ re-ejecuta. Una migración aplicada no se reescribe: se hace una nueva.
 ## Verificación
 
 ```bash
-cd backend && npm test        # 27 tests: puros, rutas y migrador
+cd backend && npm test        # 49 tests: puros, rutas y migrador
 cd frontend && npm run build
 ```
 

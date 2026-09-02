@@ -28,6 +28,20 @@ export const config = {
 
   urlPublica: process.env.URL_PUBLICA || 'http://localhost:5173',
 
+  // Datos para transferir. Van por entorno y NUNCA en el código: una
+  // cuenta bancaria commiteada queda en el historial de git para siempre.
+  // Si no están configurados, la página de la cotización simplemente no
+  // ofrece transferencia — inventar una cuenta sería mucho peor que no
+  // dar el dato.
+  transferencia: process.env.TRANSFERENCIA_BANCO ? {
+    banco: process.env.TRANSFERENCIA_BANCO,
+    tipo_cuenta: process.env.TRANSFERENCIA_TIPO || 'Cuenta corriente',
+    numero: process.env.TRANSFERENCIA_NUMERO || null,
+    titular: process.env.TRANSFERENCIA_TITULAR || null,
+    rut: process.env.TRANSFERENCIA_RUT || null,
+    email: process.env.TRANSFERENCIA_EMAIL || null,
+  } : null,
+
   smtp: {
     host: process.env.SMTP_HOST || null,
     puerto: Number(process.env.SMTP_PORT || 587),

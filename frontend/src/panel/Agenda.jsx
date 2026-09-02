@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import LogoAntai from '../componentes/LogoAntai.jsx';
-import { api, borrarToken } from '../lib/api.js';
+import { api } from '../lib/api.js';
 
 // ============================================================
 // Panel: crear fechas, ver quién viene, marcar asistencia.
@@ -136,8 +134,7 @@ function Reservas({ evento, alCerrar }) {
   );
 }
 
-export default function AdminAgenda() {
-  const navegar = useNavigate();
+export default function Agenda() {
   const [eventos, setEventos] = useState(null);
   const [error, setError] = useState(null);
   const [editando, setEditando] = useState(null);
@@ -146,7 +143,6 @@ export default function AdminAgenda() {
   const cargar = () => api('/admin/eventos', { conToken: true })
     .then((d) => { setEventos(d.eventos); setError(null); })
     .catch((e) => {
-      if (/sesión/i.test(e.message)) { borrarToken(); navegar('/panel'); return; }
       setError(e.message);
     });
 
@@ -169,75 +165,62 @@ export default function AdminAgenda() {
   }
 
   return (
-    <div className="panel">
-      <div className="panel-barra">
-        <div className="contenedor">
-          <LogoAntai variante="horizontal" tono="claro" alto={28} />
-          <button
-            className="boton boton-chico"
-            style={{ background: 'rgba(255,255,255,.16)', color: '#fff' }}
-            onClick={() => { borrarToken(); navegar('/panel'); }}
-          >Salir</button>
-        </div>
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 14, marginBottom: 22 }}>
+        <h2 style={{ margin: 0 }}>Agenda</h2>
+        {!editando && (
+          <button className="boton boton-primario" onClick={() => setEditando({ ...VACIO })}>Nueva fecha</button>
+        )}
       </div>
 
-      <div className="contenedor" style={{ paddingTop: 30, paddingBottom: 60 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 14, marginBottom: 22 }}>
-          <h2 style={{ margin: 0 }}>Agenda</h2>
-          {!editando && (
-            <button className="boton boton-primario" onClick={() => setEditando({ ...VACIO })}>Nueva fecha</button>
-          )}
-        </div>
+      {error && <div className="aviso aviso-mal">{error}</div>}
+      {editando && <Formulario inicial={editando} alGuardar={guardar} alCancelar={() => setEditando(null)} />}
+      {viendo && <Reservas evento={viendo} alCerrar={() => setViendo(null)} />}
 
-        {error && <div className="aviso aviso-mal">{error}</div>}
-        {editando && <Formulario inicial={editando} alGuardar={guardar} alCancelar={() => setEditando(null)} />}
-        {viendo && <Reservas evento={viendo} alCerrar={() => setViendo(null)} />}
+      {eventos === null && !error && <p className="tenue">Cargando…</p>}
+      {eventos && eventos.length === 0 && (
+        <div className="aviso aviso-gris">No hay fechas cargadas. Crea la primera con «Nueva fecha».</div>
+      )}
 
-        {eventos === null && !error && <p className="tenue">Cargando…</p>}
-        {eventos && eventos.length === 0 && (
-          <div className="aviso aviso-gris">No hay fechas cargadas. Crea la primera con «Nueva fecha».</div>
-        )}
-
-        {eventos && eventos.length > 0 && (
-          <div className="tabla-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Cuándo</th><th>Título</th><th>Dónde</th>
-                  <th>Cupo</th><th>Estado</th><th>Acciones</th>
+      {eventos && eventos.length > 0 && (
+        <div className="tabla-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Cuándo</th><th>Título</th><th>Dónde</th>
+                <th>Cupo</th><th>Estado</th><th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {eventos.map((e) => (
+                <tr key={e.id}>
+                  <td style={{ whiteSpace: 'nowrap' }}>{fecha(e.inicia_at)}</td>
+                  <td><strong>{e.titulo}</strong></td>
+                  <td>{[e.lugar, e.ciudad].filter(Boolean).join(', ')}</td>
+                  <td style={{ whiteSpace: 'nowrap' }}>
+                    {e.cupo === null
+                      ? <>{e.tomados} <span className="tenue">/ sin tope</span></>
+                      : <>{e.tomados} <span className="tenue">/ {e.cupo}</span></>}
+                  </td>
+                  <td>
+                    <span className={`pastilla ${e.publicado ? 'pastilla-abierta' : 'pastilla-gris'}`}>
+                      {e.publicado ? 'Publicada' : 'Borrador'}
+                    </span>
+                  </td>
+                  <td style={{ whiteSpace: 'nowrap' }}>
+                    <button className="boton boton-tierra boton-chico" onClick={() => setViendo(e)}>Inscritos</button>{' '}
+                    <button
+                      className="boton boton-tierra boton-chico"
+                      onClick={() => setEditando({ ...e, inicia_at: paraCampo(e.inicia_at), termina_at: paraCampo(e.termina_at) })}
+                    >Editar</button>{' '}
+                    <button className="boton boton-tierra boton-chico" onClick={() => borrar(e)}>Borrar</button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {eventos.map((e) => (
-                  <tr key={e.id}>
-                    <td style={{ whiteSpace: 'nowrap' }}>{fecha(e.inicia_at)}</td>
-                    <td><strong>{e.titulo}</strong></td>
-                    <td>{[e.lugar, e.ciudad].filter(Boolean).join(', ')}</td>
-                    <td style={{ whiteSpace: 'nowrap' }}>
-                      {e.cupo === null
-                        ? <>{e.tomados} <span className="tenue">/ sin tope</span></>
-                        : <>{e.tomados} <span className="tenue">/ {e.cupo}</span></>}
-                    </td>
-                    <td>
-                      <span className={`pastilla ${e.publicado ? 'pastilla-abierta' : 'pastilla-gris'}`}>
-                        {e.publicado ? 'Publicada' : 'Borrador'}
-                      </span>
-                    </td>
-                    <td style={{ whiteSpace: 'nowrap' }}>
-                      <button className="boton boton-tierra boton-chico" onClick={() => setViendo(e)}>Inscritos</button>{' '}
-                      <button
-                        className="boton boton-tierra boton-chico"
-                        onClick={() => setEditando({ ...e, inicia_at: paraCampo(e.inicia_at), termina_at: paraCampo(e.termina_at) })}
-                      >Editar</button>{' '}
-                      <button className="boton boton-tierra boton-chico" onClick={() => borrar(e)}>Borrar</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
   );
 }

@@ -7,6 +7,7 @@ import { migrar } from './lib/migrate.js';
 import { modoCorreo } from './services/mailer.js';
 import publico from './routes/publico.js';
 import admin from './routes/admin.js';
+import comercial from './routes/comercial.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -17,6 +18,7 @@ app.disable('x-powered-by');
 app.get('/api/salud', (req, res) => res.json({ ok: true, correo: modoCorreo() }));
 app.use('/api', publico);
 app.use('/api/admin', admin);
+app.use('/api/admin', comercial);
 
 // El build del frontend, si está. En desarrollo lo sirve Vite.
 const dist = path.resolve(__dirname, '../../frontend/dist');
